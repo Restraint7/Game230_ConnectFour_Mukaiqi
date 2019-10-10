@@ -454,12 +454,12 @@ void startAGame() {
 	bool customBoard = 0;
 	bool playWarpMod = 0;
 	bool playRemoveMod = 0;
-	bool playWithAI = 1;
+	bool playWithAI = 0;
 
 	creatABoard(connectFourBoard);
 
-	//addModToTheGame(&customBoard,&playWarpMod,&playRemoveMod,&playWithAI);
-	//cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+	addModToTheGame(&customBoard,&playWarpMod,&playRemoveMod,&playWithAI);
+	cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
 	int columnNumber = (customBoard ? getTheNumberOfColumn() : 7);
 	int rowNumber = (customBoard ? getTheNumberOfRow() : 6);
@@ -518,6 +518,7 @@ void startAGame() {
 				}
 			}
 			else {
+				cout << "Player " << ((turns % 2) ? "O" : "X") << "'s turn!";
 				winState = putNewPiece((turns % 2 ? -TOKENOFGRIDWITHPIECE : TOKENOFGRIDWITHPIECE), getChosenColumn(connectFourBoard, columnNumber), connectFourBoard, columnNumber, rowNumber, numberRequiredToWin, playWarpMod);
 				turns += 1;
 			}	
