@@ -3,7 +3,6 @@
 #include<string>
 #include<algorithm>
 
-
 using namespace std;
 
 const int BIGGESTCOLUMNNUMBER = 20;
@@ -11,6 +10,8 @@ const int BIGGESTROWNUMBER = 20;
 const int TOKENOFGRIDWITHPIECE = 99;
 const int TOKENOFGRIDNOTUSED = 50;
 const int TOKENOFEMPTYGRID = 25;
+const int TOKENOFWINSTATE = 999;
+const int TOKENOFTIEGAME = 1000;
 
 int getAInteger(int upperOfTheNumber) {
 	int integer;
@@ -22,18 +23,18 @@ int getAInteger(int upperOfTheNumber) {
 			return integer;
 		}
 		else {
-			cout << "This is not a integer or integer between 1 and " << upperOfTheNumber << ", please enter again:" << endl;
+			cout << "This is not a integer or integer between 1 and " << upperOfTheNumber << ", please enter again." << endl;
 		}
 	}
 }
 
 int getTheNumberOfColumn(){
-	cout << "Please set Column number." << endl;
+	cout << "Please set the Column number." << endl;
 	return getAInteger(BIGGESTCOLUMNNUMBER);
 }
 
 int getTheNumberOfRow() {
-	cout << "Please set Row number." << endl;
+	cout << "Please set the Row number." << endl;
 	return getAInteger(BIGGESTCOLUMNNUMBER);
 }
 
@@ -99,19 +100,25 @@ void initializeBoard(int(*board)[BIGGESTCOLUMNNUMBER], int columnNumber, int row
 int checkNewPieceOnRow(int(*board)[BIGGESTCOLUMNNUMBER], int columnNumber, int rowNumberOfNewPiece, int columnNumberOfNewPiece, int numberRequiredToWin,bool playWrapMod, int tokenOfPlayer) {
 	int countForConnectPiece = 1;
 	int columnNumberOfPieceChecked = columnNumberOfNewPiece - 1;
-	int checkTimes = 0;
+	int checkTimes = 0; //Used for wrapmod
+	int EmptyNumber = 0; //Used for AI,connected piece with empty grid in each side will get more point
+	int valueOFThisGrid = 0;//Used for AI,to evaluate the value of this column and choose the highest to put piece
+	
 
 	while ((playWrapMod?checkTimes < numberRequiredToWin: columnNumberOfPieceChecked > 0) && countForConnectPiece < numberRequiredToWin) {
 		columnNumberOfPieceChecked == 0 ?columnNumberOfPieceChecked = columnNumber:NULL;
+		int valueOfThisGrid = 0;
 		if (board[rowNumberOfNewPiece][columnNumberOfPieceChecked - 1] == tokenOfPlayer) {
 			columnNumberOfPieceChecked -= 1;
 			countForConnectPiece += 1;
 			checkTimes += 1;
 		}
 		else {
-			checkTimes = numberRequiredToWin;
 			break;
 		}
+	}
+	if (board[rowNumberOfNewPiece][columnNumberOfPieceChecked - 1] == TOKENOFEMPTYGRID) {
+		EmptyNumber += 1;
 	}
 
 	columnNumberOfPieceChecked = columnNumberOfNewPiece + 1;
@@ -125,23 +132,28 @@ int checkNewPieceOnRow(int(*board)[BIGGESTCOLUMNNUMBER], int columnNumber, int r
 			checkTimes += 1;
 		}
 		else {
-			checkTimes = numberRequiredToWin;
 			break;
 		}
 	}
 
+	if (board[rowNumberOfNewPiece][columnNumberOfPieceChecked - 1] == TOKENOFEMPTYGRID) {
+		EmptyNumber += 1;
+	}
 	if (countForConnectPiece == numberRequiredToWin) {
-		return 1;
+		valueOFThisGrid = TOKENOFWINSTATE;
 	}
 	else {
-		return 0;
+		valueOFThisGrid = EmptyNumber * pow(countForConnectPiece,3);
 	}
+	return valueOFThisGrid;
 }
 
 int checkNewPieceOnColumn(int(*board)[BIGGESTCOLUMNNUMBER], int rowNumber, int rowNumberOfNewPiece, int columnNumberOfNewPiece, int numberRequiredToWin, bool playWrapMod, int tokenOfPlayer) {
 	int countForConnectPiece = 1;
 	int rowNumberOfPieceChecked = rowNumberOfNewPiece + 1;
 	int checkTimes = 0;
+	int EmptyNumber = 0;
+	int valueOFThisGrid = 0;
 	
 	while (rowNumberOfPieceChecked < rowNumber + 1 && countForConnectPiece < numberRequiredToWin) {
 		if (board[rowNumberOfPieceChecked][columnNumberOfNewPiece - 1] == tokenOfPlayer) {
@@ -167,12 +179,17 @@ int checkNewPieceOnColumn(int(*board)[BIGGESTCOLUMNNUMBER], int rowNumber, int r
 		}
 	}
 
+	if (board[rowNumberOfPieceChecked][columnNumberOfNewPiece - 1] == TOKENOFEMPTYGRID) {
+		EmptyNumber += 1;
+	}
+
 	if (countForConnectPiece == numberRequiredToWin) {
-		return 1;
+		valueOFThisGrid = TOKENOFWINSTATE;
 	}
 	else {
-		return 0;
+		valueOFThisGrid = EmptyNumber * pow(countForConnectPiece, 3);
 	}
+	return valueOFThisGrid;
 }
 
 int checkNewPieceOnDiagonal45Degree(int(*board)[BIGGESTCOLUMNNUMBER], int rowNumber, int columnNumber, int rowNumberOfNewPiece, int columnNumberOfNewPiece, int numberRequiredToWin, bool playWrapMod,int tokenOfPlayer) {
@@ -180,6 +197,8 @@ int checkNewPieceOnDiagonal45Degree(int(*board)[BIGGESTCOLUMNNUMBER], int rowNum
 	int columnNumberOfPieceChecked = columnNumberOfNewPiece - 1;
 	int rowNumberOfPieceChecked = rowNumberOfNewPiece + 1;
 	int checkTimes = 0;
+	int EmptyNumber = 0;
+	int valueOFThisGrid = 0;
 
 	while (((playWrapMod ? checkTimes < numberRequiredToWin : rowNumberOfPieceChecked < rowNumber + 1 )&& 
 		(playWrapMod ? checkTimes < numberRequiredToWin : columnNumberOfPieceChecked > 0)) &&
@@ -198,6 +217,9 @@ int checkNewPieceOnDiagonal45Degree(int(*board)[BIGGESTCOLUMNNUMBER], int rowNum
 		}
 	}
 
+	if (board[rowNumberOfPieceChecked][columnNumberOfPieceChecked - 1] == TOKENOFEMPTYGRID) {
+		EmptyNumber += 1;
+	}
 	rowNumberOfPieceChecked = rowNumberOfNewPiece - 1;
 	columnNumberOfPieceChecked = columnNumberOfNewPiece + 1;
 	checkTimes = 0;
@@ -218,18 +240,25 @@ int checkNewPieceOnDiagonal45Degree(int(*board)[BIGGESTCOLUMNNUMBER], int rowNum
 		}
 	}
 
+	if (board[rowNumberOfPieceChecked][columnNumberOfPieceChecked - 1] == TOKENOFEMPTYGRID) {
+		EmptyNumber += 1;
+	}
+
 	if (countForConnectPiece == numberRequiredToWin) {
-		return 1;
+		valueOFThisGrid = TOKENOFWINSTATE;
 	}
 	else {
-		return 0;
+		valueOFThisGrid = EmptyNumber * pow(countForConnectPiece, 3);
 	}
+	return valueOFThisGrid;
 }
 int checkNewPieceOnDiagonal135Degree(int(*board)[BIGGESTCOLUMNNUMBER], int rowNumber, int columnNumber, int rowNumberOfNewPiece, int columnNumberOfNewPiece, int numberRequiredToWin, bool playWrapMod,int tokenOfPlayer) {
 	int countForConnectPiece = 1;
 	int rowNumberOfPieceChecked = rowNumberOfNewPiece + 1;
 	int columnNumberOfPieceChecked = columnNumberOfNewPiece + 1;
 	int checkTimes = 0;
+	int EmptyNumber = 0;
+	int valueOFThisGrid = 0;
 
 	while ((playWrapMod ? checkTimes < numberRequiredToWin : (rowNumberOfPieceChecked < rowNumber + 1) && 
 		(playWrapMod ? checkTimes < numberRequiredToWin : columnNumberOfPieceChecked < columnNumber + 1)) &&
@@ -247,7 +276,9 @@ int checkNewPieceOnDiagonal135Degree(int(*board)[BIGGESTCOLUMNNUMBER], int rowNu
 			break;
 		}
 	}
-
+	if (board[rowNumberOfPieceChecked][columnNumberOfPieceChecked - 1] == TOKENOFEMPTYGRID) {
+		EmptyNumber += 1;
+	}
 	rowNumberOfPieceChecked = rowNumberOfNewPiece - 1;
 	columnNumberOfPieceChecked = columnNumberOfNewPiece - 1;
 	checkTimes = 0;
@@ -268,12 +299,17 @@ int checkNewPieceOnDiagonal135Degree(int(*board)[BIGGESTCOLUMNNUMBER], int rowNu
 			break;
 		}
 	}
+	if(board[rowNumberOfPieceChecked][columnNumberOfPieceChecked - 1] == TOKENOFEMPTYGRID) {
+		EmptyNumber += 1;
+	}
+
 	if (countForConnectPiece == numberRequiredToWin) {
-		return 1;
+		valueOFThisGrid = TOKENOFWINSTATE;
 	}
 	else {
-		return 0;
+		valueOFThisGrid = EmptyNumber * pow(countForConnectPiece, 3);
 	}
+	return valueOFThisGrid;
 }
 
 int getChosenColumn(int(*board)[BIGGESTCOLUMNNUMBER], int columnNumber) {
@@ -285,27 +321,29 @@ int getChosenColumn(int(*board)[BIGGESTCOLUMNNUMBER], int columnNumber) {
 	return chosenColumn;
 }
 
+int calculateValueOfChosenGrid(int tokenOfPlayer, int rowNumberOfNewPiece,int chosenColumn, int(*board)[BIGGESTCOLUMNNUMBER], int columnNumber, int rowNumber, int numberRequiredToWin, bool playWrapMod) {
+	return (checkNewPieceOnRow(board, columnNumber, rowNumberOfNewPiece, chosenColumn, numberRequiredToWin, playWrapMod, tokenOfPlayer)
+		+ checkNewPieceOnColumn(board, rowNumber, rowNumberOfNewPiece, chosenColumn, numberRequiredToWin, playWrapMod, tokenOfPlayer)
+		+ checkNewPieceOnDiagonal45Degree(board, rowNumber, columnNumber, rowNumberOfNewPiece, chosenColumn, numberRequiredToWin, playWrapMod, tokenOfPlayer)
+		+ checkNewPieceOnDiagonal135Degree(board, rowNumber, columnNumber, rowNumberOfNewPiece, chosenColumn, numberRequiredToWin, playWrapMod, tokenOfPlayer))
+		* (tokenOfPlayer / TOKENOFGRIDWITHPIECE);
+}
+
 int putNewPiece(int tokenOfPlayer, int chosenColumn,int(*board)[BIGGESTCOLUMNNUMBER], int columnNumber, int rowNumber,int numberRequiredToWin,bool playWrapMod) {
 	int rowNumberOfNewPiece = rowNumber - board[rowNumber + 1][chosenColumn - 1];
 	board[rowNumberOfNewPiece][chosenColumn - 1] = tokenOfPlayer;
 	board[rowNumber + 1][chosenColumn - 1] += 1;
-	int winState = (checkNewPieceOnRow(board, columnNumber, rowNumberOfNewPiece, chosenColumn, numberRequiredToWin,playWrapMod,tokenOfPlayer)
-		+ checkNewPieceOnColumn(board, rowNumber, rowNumberOfNewPiece, chosenColumn, numberRequiredToWin,playWrapMod,tokenOfPlayer)
-		+ checkNewPieceOnDiagonal45Degree(board, rowNumber, columnNumber, rowNumberOfNewPiece, chosenColumn, numberRequiredToWin,playWrapMod,tokenOfPlayer)
-		+ checkNewPieceOnDiagonal135Degree(board, rowNumber, columnNumber, rowNumberOfNewPiece, chosenColumn, numberRequiredToWin,playWrapMod,tokenOfPlayer)
-		) * (tokenOfPlayer);
-	if (winState > 0) {
-		return 1;
+	int winState = calculateValueOfChosenGrid(tokenOfPlayer, rowNumberOfNewPiece, chosenColumn, board, columnNumber, rowNumber, numberRequiredToWin, playWrapMod);
+	if (winState >= 500) {
+		return TOKENOFWINSTATE;
 	}
-	else if (winState < 0) {
-		return 2;
+	else if (winState <= -500) {
+		return -TOKENOFWINSTATE;
 	}
 	else {
-		return 0;
+		return winState;
 	}
 }
-
-//get the column that player put a new piece in and check whether the value that player put in is legal. 
 
 int removeAPiece(int(*board)[BIGGESTCOLUMNNUMBER], int columnNumber, int rowNumber, int numberRequiredToWin, bool playWrapMod) {
 	int chosenColumn = getAInteger(columnNumber);
@@ -330,16 +368,51 @@ int removeAPiece(int(*board)[BIGGESTCOLUMNNUMBER], int columnNumber, int rowNumb
 	while (newNumberOfEachPiece < numberOfRemainPiece) {
 		winStateBuffer = putNewPiece(tokenRecord[newNumberOfEachPiece], chosenColumn, board, columnNumber, rowNumber, numberRequiredToWin, playWrapMod);
 		newNumberOfEachPiece += 1;
-		if (winStateBuffer != 0 && winStateBuffer != winState) {
+		if (abs(winStateBuffer) == TOKENOFWINSTATE && winStateBuffer != winState) {
 			if (winState == 0) {
 				winState = winStateBuffer;
 			}
 			else {
-				return 3;
+				return TOKENOFTIEGAME;
 			}
 		}
 	}
 	return winState;
+}
+
+int evaluateTheValueOfTheColumn(int tokenOfPlayer, int chosenColumn, int(*board)[BIGGESTCOLUMNNUMBER], int columnNumber, int rowNumber, int numberRequiredToWin, bool playWrapMod) {
+	int valueOfThisColumn = 0;
+	int rowNumberOfVirtualPiece = rowNumber - board[rowNumber + 1][chosenColumn - 1];//put a virtual piece for calculate the value of next step
+	if (board[rowNumber + 1][chosenColumn - 1] == rowNumber) {
+		return valueOfThisColumn=0;
+	}
+	else{
+		valueOfThisColumn += abs(calculateValueOfChosenGrid(tokenOfPlayer, rowNumberOfVirtualPiece, chosenColumn, board, columnNumber, rowNumber, numberRequiredToWin, playWrapMod));
+		valueOfThisColumn += abs(calculateValueOfChosenGrid(-tokenOfPlayer, rowNumberOfVirtualPiece, chosenColumn, board, columnNumber, rowNumber, numberRequiredToWin, playWrapMod));
+		if (board[rowNumber + 1][chosenColumn - 1] == rowNumber - 1) {
+			return valueOfThisColumn;
+		}
+		else {
+			putNewPiece(tokenOfPlayer, chosenColumn, board, columnNumber, rowNumber, numberRequiredToWin, playWrapMod);//Put the virtual piece
+			valueOfThisColumn -= abs(calculateValueOfChosenGrid(tokenOfPlayer, rowNumberOfVirtualPiece-1, chosenColumn, board, columnNumber, rowNumber, numberRequiredToWin, playWrapMod))/2;//Next step get less value
+			valueOfThisColumn -= abs(calculateValueOfChosenGrid(-tokenOfPlayer, rowNumberOfVirtualPiece-1, chosenColumn, board, columnNumber, rowNumber, numberRequiredToWin, playWrapMod))/2;
+			board[rowNumber + 1][chosenColumn - 1] -= 1;
+			board[rowNumberOfVirtualPiece][chosenColumn - 1] = TOKENOFEMPTYGRID;//Remove virtual piece
+			return valueOfThisColumn;
+		}	
+	}
+}
+
+int putAPieceByAI(int tokenOfPlayer, int(*board)[BIGGESTCOLUMNNUMBER], int columnNumber, int rowNumber, int numberRequiredToWin, bool playWrapMod) {
+	int mostValuableColumn = 4;//if board is empty, put in the millde.
+	int valueOfEachColumn[BIGGESTCOLUMNNUMBER] = { 0 };
+	for (int j = 1; j <= columnNumber; j++) {
+		if (evaluateTheValueOfTheColumn(tokenOfPlayer,j,board,columnNumber,rowNumber,numberRequiredToWin,playWrapMod)>
+			evaluateTheValueOfTheColumn(tokenOfPlayer,mostValuableColumn,board,columnNumber,rowNumber,numberRequiredToWin,playWrapMod)){
+			mostValuableColumn = j;	
+			}
+	}
+	return mostValuableColumn;
 }
 
 void addModToTheGame(bool*customOwnBoard,bool*playWrapMod,bool*removeMod,bool*playWithAI){
@@ -380,8 +453,8 @@ void startAGame() {
 	int turns = 0;
 	bool customBoard = 0;
 	bool playWarpMod = 0;
-	bool playRemoveMod = 1;
-	bool playWithAI = 0;
+	bool playRemoveMod = 0;
+	bool playWithAI = 1;
 
 	creatABoard(connectFourBoard);
 
@@ -391,20 +464,33 @@ void startAGame() {
 	int columnNumber = (customBoard ? getTheNumberOfColumn() : 7);
 	int rowNumber = (customBoard ? getTheNumberOfRow() : 6);
 	int numberRequiredToWin = (customBoard ? getTheNumberRequiredToWin(columnNumber,rowNumber) : 4);
+	int moveFirst = 1;
 
 	initializeBoard(connectFourBoard, columnNumber, rowNumber, &turns);
 
-	while (winState == 0) {
+	if (playWithAI) {
+		cout << "input 1 to move FIRST, input 2 to move SECOND." << endl;
+		moveFirst = getAInteger(2);
+	}
+
+	while (abs(winState) < 500) {
 		if (playRemoveMod) {
 			cout << "Enter R to remove a piece or enter P to put a piece." << endl;
 			char action = 'N';
+			int checkBoardIsEmpty = 0;
+			for (int j = 1; j <= columnNumber; j++) {
+				checkBoardIsEmpty += connectFourBoard[rowNumber + 1][j - 1];
+			}
 			string input;
 			while (getline(cin, input)) {
-				if (input.length() == 1 && (input[0]=='R'||input[0]=='P')) {
+				if (input.length() == 1 && ((input[0]=='R'&& checkBoardIsEmpty !=0)||input[0]=='P')) {
 					action = input[0];
 					break;
 				}
-				else {
+				else if(input[0] == 'R' && checkBoardIsEmpty == 0){
+					cout << "Board is empty, you can not remove a piece now.Please enter again." << endl;
+				}
+				else{
 					cout << "Only R and P is legal, please enter again." << endl;
 				}
 			}
@@ -419,19 +505,34 @@ void startAGame() {
 				break;
 			}
 		}else if (turns<columnNumber*rowNumber) {
-			winState = putNewPiece((turns%2?-TOKENOFGRIDWITHPIECE:TOKENOFGRIDWITHPIECE), getChosenColumn(connectFourBoard, columnNumber), connectFourBoard, columnNumber, rowNumber,numberRequiredToWin,playWarpMod);
-			turns += 1;
+			if (playWithAI) {
+				if ((turns + moveFirst) % 2) {
+					winState = putNewPiece(TOKENOFGRIDWITHPIECE, getChosenColumn(connectFourBoard, columnNumber), connectFourBoard, columnNumber, rowNumber, numberRequiredToWin, playWarpMod);
+					turns += 1;
+				}
+				else {
+					int columnAIChosen = putAPieceByAI(-TOKENOFGRIDWITHPIECE, connectFourBoard, columnNumber, rowNumber, numberRequiredToWin, playWarpMod);
+					cout << "AI put piece on column " << columnAIChosen << endl;
+					winState = putNewPiece(-TOKENOFGRIDWITHPIECE,columnAIChosen , connectFourBoard, columnNumber, rowNumber, numberRequiredToWin, playWarpMod);
+					turns += 1;
+				}
+			}
+			else {
+				winState = putNewPiece((turns % 2 ? -TOKENOFGRIDWITHPIECE : TOKENOFGRIDWITHPIECE), getChosenColumn(connectFourBoard, columnNumber), connectFourBoard, columnNumber, rowNumber, numberRequiredToWin, playWarpMod);
+				turns += 1;
+			}	
 		}
 		else {
+			winState = TOKENOFWINSTATE;
 			break;
 		}
 		printBoard(connectFourBoard, columnNumber, rowNumber);
 	}
 
 	switch (winState) {
-	case 1:cout << "Player X win the game!" << endl; break;
-	case 2:cout << "Player O win the game!" << endl; break;
-	case 3:cout << "Game end in a draw!" << endl; break;
+	case TOKENOFWINSTATE:cout << "Player X win the game!" << endl; break;
+	case -TOKENOFWINSTATE:cout << "Player O win the game!" << endl; break;
+	case TOKENOFTIEGAME:cout << "Game end in a draw!" << endl; break;
 	default:break;
 	}
 
@@ -447,7 +548,7 @@ int main() {
 		cin >> answerFromUser;
 		if (answerFromUser == 'Y') {
 			wantANewGame = 1;
-			answerFromUser == 'N';
+			answerFromUser = 'N';
 			system("cls");
 			cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 		}
