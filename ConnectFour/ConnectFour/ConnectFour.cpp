@@ -106,9 +106,6 @@ void printBoard(int(*board)[BIGGESTCOLUMNNUMBER+2], int columnNumber, int rowNum
 		cout << endl;
 	}
 }	
-/**
-	1-20:used for record the highest row with pieces of each column on Row [rowNumber+1] and 
-	**/
 
 void initializeBoard(int(*board)[BIGGESTCOLUMNNUMBER+2], int columnNumber, int rowNumber) {
 	for (int j = 1; j <= columnNumber; j++) {
@@ -152,9 +149,7 @@ int checkNewPieceOnRow(ConnectFourBoard &boardSetting, int rowNumberOfNewPiece, 
 	int countForConnectPiece = 1;
 	int columnNumberOfPieceChecked = columnNumberOfNewPiece - 1;
 	int checkTimes = 0; //Used for wrapmod
-	int EmptyNumber = 0; //Used for AI,connected piece with empty grid in each side will get more point
-	int valueOFThisGrid = 0;//Used for AI,to evaluate the value of this column and choose the highest to put piece
-	
+	int emptyNumber = 0; //Used for AI,connected piece with empty grid in each side will get more point
 
 	while ((boardSetting.playWrapMod?checkTimes < boardSetting.numberRequiredToWin: columnNumberOfPieceChecked > 0) && countForConnectPiece < boardSetting.numberRequiredToWin) {
 		columnNumberOfPieceChecked == 0 ?columnNumberOfPieceChecked = boardSetting.columnNumber:NULL;
@@ -169,7 +164,7 @@ int checkNewPieceOnRow(ConnectFourBoard &boardSetting, int rowNumberOfNewPiece, 
 		}
 	}
 	if (boardSetting.boardForPlay[rowNumberOfNewPiece][columnNumberOfPieceChecked] == TOKENOFEMPTYGRID) {
-		EmptyNumber += 1;
+		emptyNumber += 1;
 	}
 
 	columnNumberOfPieceChecked = columnNumberOfNewPiece + 1;
@@ -188,23 +183,17 @@ int checkNewPieceOnRow(ConnectFourBoard &boardSetting, int rowNumberOfNewPiece, 
 	}
 
 	if (boardSetting.boardForPlay[rowNumberOfNewPiece][columnNumberOfPieceChecked+1] == TOKENOFEMPTYGRID) {
-		EmptyNumber += 1;
+		emptyNumber += 1;
 	}
-	if (countForConnectPiece == boardSetting.numberRequiredToWin) {
-		valueOFThisGrid = TOKENOFWINSTATE;
-	}
-	else {
-		valueOFThisGrid = EmptyNumber * pow(countForConnectPiece,3);
-	}
-	return valueOFThisGrid;
+	return ((countForConnectPiece == boardSetting.numberRequiredToWin) ? TOKENOFWINSTATE : emptyNumber * pow(countForConnectPiece, 3));
+	//return the evaluation of this grid(used for AI)
 }
 
 int checkNewPieceOnColumn(ConnectFourBoard& boardSetting, int rowNumberOfNewPiece, int columnNumberOfNewPiece, int tokenOfPlayer) {
 	int countForConnectPiece = 1;
 	int rowNumberOfPieceChecked = rowNumberOfNewPiece + 1;
 	int checkTimes = 0;
-	int EmptyNumber = 0;
-	int valueOFThisGrid = 0;
+	int emptyNumber = 0;
 	
 	while (rowNumberOfPieceChecked < boardSetting.rowNumber+1  && countForConnectPiece < boardSetting.numberRequiredToWin) {
 		if (boardSetting.boardForPlay[rowNumberOfPieceChecked][columnNumberOfNewPiece] == tokenOfPlayer) {
@@ -214,7 +203,7 @@ int checkNewPieceOnColumn(ConnectFourBoard& boardSetting, int rowNumberOfNewPiec
 		else {
 			if (boardSetting.playWrapMod && rowNumberOfNewPiece == 1) {
 				rowNumberOfPieceChecked = boardSetting.rowNumber;
-				while (checkTimes < 4 && countForConnectPiece < boardSetting.numberRequiredToWin) {
+				while (checkTimes < boardSetting.numberRequiredToWin && countForConnectPiece < boardSetting.numberRequiredToWin) {
 					if (boardSetting.boardForPlay[rowNumberOfPieceChecked][columnNumberOfNewPiece] == tokenOfPlayer) {
 						rowNumberOfPieceChecked -= 1;
 						countForConnectPiece += 1;
@@ -231,16 +220,10 @@ int checkNewPieceOnColumn(ConnectFourBoard& boardSetting, int rowNumberOfNewPiec
 	}
 
 	if (boardSetting.boardForPlay[rowNumberOfPieceChecked][columnNumberOfNewPiece] == TOKENOFEMPTYGRID) {
-		EmptyNumber += 1;
+		emptyNumber += 1;
 	}
 
-	if (countForConnectPiece == boardSetting.numberRequiredToWin) {
-		valueOFThisGrid = TOKENOFWINSTATE;
-	}
-	else {
-		valueOFThisGrid = EmptyNumber * pow(countForConnectPiece, 3);
-	}
-	return valueOFThisGrid;
+	return ((countForConnectPiece == boardSetting.numberRequiredToWin) ? TOKENOFWINSTATE : emptyNumber * pow(countForConnectPiece, 3));
 }
 
 int checkNewPieceOnDiagonal45Degree(ConnectFourBoard& boardSetting, int rowNumberOfNewPiece, int columnNumberOfNewPiece, int tokenOfPlayer) {
@@ -248,8 +231,7 @@ int checkNewPieceOnDiagonal45Degree(ConnectFourBoard& boardSetting, int rowNumbe
 	int columnNumberOfPieceChecked = columnNumberOfNewPiece - 1;
 	int rowNumberOfPieceChecked = rowNumberOfNewPiece + 1;
 	int checkTimes = 0;
-	int EmptyNumber = 0;
-	int valueOFThisGrid = 0;
+	int emptyNumber = 0;
 
 	while (((boardSetting.playWrapMod ? checkTimes < boardSetting.numberRequiredToWin : rowNumberOfPieceChecked < boardSetting.rowNumber + 1 )&&
 		(boardSetting.playWrapMod ? checkTimes < boardSetting.numberRequiredToWin : columnNumberOfPieceChecked > 0)) &&
@@ -269,7 +251,7 @@ int checkNewPieceOnDiagonal45Degree(ConnectFourBoard& boardSetting, int rowNumbe
 	}
 
 	if (boardSetting.boardForPlay[rowNumberOfPieceChecked][columnNumberOfPieceChecked] == TOKENOFEMPTYGRID) {
-		EmptyNumber += 1;
+		emptyNumber += 1;
 	}
 	rowNumberOfPieceChecked = rowNumberOfNewPiece - 1;
 	columnNumberOfPieceChecked = columnNumberOfNewPiece + 1;
@@ -292,24 +274,16 @@ int checkNewPieceOnDiagonal45Degree(ConnectFourBoard& boardSetting, int rowNumbe
 	}
 
 	if (boardSetting.boardForPlay[rowNumberOfPieceChecked][columnNumberOfPieceChecked] == TOKENOFEMPTYGRID) {
-		EmptyNumber += 1;
+		emptyNumber += 1;
 	}
-
-	if (countForConnectPiece == boardSetting.numberRequiredToWin) {
-		valueOFThisGrid = TOKENOFWINSTATE;
-	}
-	else {
-		valueOFThisGrid = EmptyNumber * pow(countForConnectPiece, 3);
-	}
-	return valueOFThisGrid;
+	return ((countForConnectPiece == boardSetting.numberRequiredToWin) ? TOKENOFWINSTATE : emptyNumber * pow(countForConnectPiece, 3));
 }
 int checkNewPieceOnDiagonal135Degree(ConnectFourBoard& boardSetting, int rowNumberOfNewPiece, int columnNumberOfNewPiece, int tokenOfPlayer) {
 	int countForConnectPiece = 1;
 	int rowNumberOfPieceChecked = rowNumberOfNewPiece + 1;
 	int columnNumberOfPieceChecked = columnNumberOfNewPiece + 1;
 	int checkTimes = 0;
-	int EmptyNumber = 0;
-	int valueOFThisGrid = 0;
+	int emptyNumber = 0;
 
 	while ((boardSetting.playWrapMod ? checkTimes < boardSetting.numberRequiredToWin : (rowNumberOfPieceChecked < boardSetting.rowNumber + 1) &&
 		(boardSetting.playWrapMod ? checkTimes < boardSetting.numberRequiredToWin : columnNumberOfPieceChecked < boardSetting.columnNumber + 1)) &&
@@ -328,7 +302,7 @@ int checkNewPieceOnDiagonal135Degree(ConnectFourBoard& boardSetting, int rowNumb
 		}
 	}
 	if (boardSetting.boardForPlay[rowNumberOfPieceChecked][columnNumberOfPieceChecked] == TOKENOFEMPTYGRID) {
-		EmptyNumber += 1;
+		emptyNumber += 1;
 	}
 	rowNumberOfPieceChecked = rowNumberOfNewPiece - 1;
 	columnNumberOfPieceChecked = columnNumberOfNewPiece - 1;
@@ -351,16 +325,9 @@ int checkNewPieceOnDiagonal135Degree(ConnectFourBoard& boardSetting, int rowNumb
 		}
 	}
 	if(boardSetting.boardForPlay[rowNumberOfPieceChecked][columnNumberOfPieceChecked] == TOKENOFEMPTYGRID) {
-		EmptyNumber += 1;
+		emptyNumber += 1;
 	}
-
-	if (countForConnectPiece == boardSetting.numberRequiredToWin) {
-		valueOFThisGrid = TOKENOFWINSTATE;
-	}
-	else {
-		valueOFThisGrid = EmptyNumber * pow(countForConnectPiece, 3);
-	}
-	return valueOFThisGrid;
+	return ((countForConnectPiece == boardSetting.numberRequiredToWin) ? TOKENOFWINSTATE : emptyNumber * pow(countForConnectPiece, 3));
 }
 
 int getChosenColumn(int(*board)[BIGGESTCOLUMNNUMBER+2], int columnNumber) {
@@ -455,7 +422,7 @@ int evaluateTheValueOfTheColumn(int tokenOfPlayer, int chosenColumn, ConnectFour
 }
 
 int putAPieceByAI(int tokenOfPlayer, ConnectFourBoard boardSetting) {
-	int mostValuableColumn = 4;//if board is empty, put in the millde.
+	int mostValuableColumn = boardSetting.columnNumber/2 + 1;//if board is empty, put in the millde.
 	for (int j = 1; j <= boardSetting.columnNumber; j++) {
 		if (evaluateTheValueOfTheColumn(tokenOfPlayer,j, boardSetting)>
 			evaluateTheValueOfTheColumn(tokenOfPlayer,mostValuableColumn, boardSetting)){
