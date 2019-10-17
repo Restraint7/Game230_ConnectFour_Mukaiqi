@@ -84,29 +84,6 @@ void addModToTheGame(bool* customOwnBoard, bool* playWrapMod, bool* removeMod, b
 	}
 }
 
-void printBoard(int(*board)[BIGGESTCOLUMNNUMBER+2], int columnNumber, int rowNumber) {
-	for (int i = 0; i <= rowNumber; i++) {
-		for (int j = 1; j <= columnNumber; j++) {
-			switch (board[i][j]) {
-			case TOKENOFEMPTYGRID:
-				cout << "\t" << '.';
-				break;
-			case TOKENOFGRIDWITHPIECE:
-				cout << "\t" << 'X';
-				break;
-			case -TOKENOFGRIDWITHPIECE:
-				cout << "\t" << 'O';
-				break;
-			case TOKENOFGRIDNOTUSED:
-				break;
-			default:
-				cout << "\t" << board[i][j];
-			}
-		}
-		cout << endl;
-	}
-}	
-
 void initializeBoard(int(*board)[BIGGESTCOLUMNNUMBER+2], int columnNumber, int rowNumber) {
 	for (int j = 1; j <= columnNumber; j++) {
 		board[0][j] = j;
@@ -119,7 +96,6 @@ void initializeBoard(int(*board)[BIGGESTCOLUMNNUMBER+2], int columnNumber, int r
 	for (int j = 1; j <= columnNumber; j++) {
 		board[rowNumber + 1][j] = 0;
 	}
-	printBoard(board, columnNumber, rowNumber);
 }
 
 //initialize the board according to the row and column number customed by user.
@@ -402,7 +378,7 @@ int evaluateTheValueOfTheColumn(int tokenOfPlayer, int chosenColumn, ConnectFour
 	int valueOfThisColumn = 0;
 	int rowNumberOfVirtualPiece = boardSetting.rowNumber - boardSetting.boardForPlay[boardSetting.rowNumber + 1][chosenColumn];//put a virtual piece for calculate the value of next step
 	if (boardSetting.boardForPlay[boardSetting.rowNumber + 1][chosenColumn] == boardSetting.rowNumber) {
-		return valueOfThisColumn=0;
+		return valueOfThisColumn=-2*(TOKENOFWINSTATE+1);
 	}
 	else{
 		valueOfThisColumn += abs(calculateValueOfChosenGrid(tokenOfPlayer, rowNumberOfVirtualPiece, chosenColumn, boardSetting));
@@ -431,15 +407,34 @@ int putAPieceByAI(int tokenOfPlayer, ConnectFourBoard boardSetting) {
 	}
 	return mostValuableColumn;
 }
-//
-
-
-
+void printBoard(ConnectFourBoard boardSetting) {
+		for (int i = 0; i <= boardSetting.rowNumber; i++) {
+			for (int j = 1; j <= boardSetting.columnNumber; j++) {
+				switch (boardSetting.boardForPlay[i][j]) {
+				case TOKENOFEMPTYGRID:
+					cout << "\t" << '.';
+					break;
+				case TOKENOFGRIDWITHPIECE:
+					cout << "\t" << 'X';
+					break;
+				case -TOKENOFGRIDWITHPIECE:
+					cout << "\t" << 'O';
+					break;
+				case TOKENOFGRIDNOTUSED:
+					break;
+				default:
+					cout << "\t" << boardSetting.boardForPlay[i][j];
+				}
+			}
+			cout << endl;
+		}
+}
 
 void startAGame() {
 	int winState = 0; // 0:game is still going, 1: Player X win, 2:Player O win, 3: tie
 	int turns = 0;
 	ConnectFourBoard connectFour;
+	printBoard(connectFour);
 	int moveFirst = 1;
 
 	if (connectFour.playWithAI) {
@@ -448,6 +443,7 @@ void startAGame() {
 	}
 
 	while (abs(winState) < 500) {
+		int columnAIChosen = 0;
 		if (connectFour.playRemoveMod) {
 			cout << "Enter R to remove a piece or enter P to put a piece." << endl;
 			char action = 'N';
@@ -481,13 +477,12 @@ void startAGame() {
 		}else if (turns< connectFour.columnNumber* connectFour.rowNumber) {
 			if (connectFour.playWithAI) {
 				if ((turns + moveFirst) % 2) {
-					winState = putNewPiece(TOKENOFGRIDWITHPIECE, getChosenColumn(connectFour.boardForPlay, connectFour.columnNumber), connectFour);
+					winState = putNewPiece((turns % 2 ? -TOKENOFGRIDWITHPIECE : TOKENOFGRIDWITHPIECE), getChosenColumn(connectFour.boardForPlay, connectFour.columnNumber), connectFour);
 					turns += 1;
 				}
 				else {
-					int columnAIChosen = putAPieceByAI(-TOKENOFGRIDWITHPIECE, connectFour);
-					cout << "AI put piece on column " << columnAIChosen << endl;
-					winState = putNewPiece(-TOKENOFGRIDWITHPIECE,columnAIChosen , connectFour);
+					columnAIChosen = putAPieceByAI(-TOKENOFGRIDWITHPIECE, connectFour);
+					winState = putNewPiece((turns % 2 ? -TOKENOFGRIDWITHPIECE : TOKENOFGRIDWITHPIECE),columnAIChosen , connectFour);
 					turns += 1;
 				}
 			}
@@ -501,7 +496,11 @@ void startAGame() {
 			winState = TOKENOFWINSTATE;
 			break;
 		}
-		printBoard(connectFour.boardForPlay, connectFour.columnNumber, connectFour.rowNumber);
+		system("cls");
+		if (connectFour.playWithAI) {
+			cout << "AI put piece on column " << columnAIChosen << endl;
+		}
+		printBoard(connectFour);
 	}
 
 	switch (winState) {
