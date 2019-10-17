@@ -202,7 +202,7 @@ int checkNewPieceOnColumn(ConnectFourBoard& boardSetting, int rowNumberOfNewPiec
 	return ((countForConnectPiece == boardSetting.numberRequiredToWin) ? TOKENOFWINSTATE : emptyNumber * pow(countForConnectPiece, 3));
 }
 
-int checkNewPieceOnDiagonal45Degree(ConnectFourBoard& boardSetting, int rowNumberOfNewPiece, int columnNumberOfNewPiece, int tokenOfPlayer) {
+int checkNewPieceOnDiagonal45Degree(ConnectFourBoard &boardSetting, int rowNumberOfNewPiece, int columnNumberOfNewPiece, int tokenOfPlayer) {
 	int countForConnectPiece = 1;
 	int columnNumberOfPieceChecked = columnNumberOfNewPiece - 1;
 	int rowNumberOfPieceChecked = rowNumberOfNewPiece + 1;
@@ -233,7 +233,7 @@ int checkNewPieceOnDiagonal45Degree(ConnectFourBoard& boardSetting, int rowNumbe
 	columnNumberOfPieceChecked = columnNumberOfNewPiece + 1;
 	checkTimes = 0;
 
-	while (((boardSetting.playWrapMod ? checkTimes< boardSetting.numberRequiredToWin : rowNumberOfPieceChecked > 1) &&
+	while (((boardSetting.playWrapMod ? checkTimes< boardSetting.numberRequiredToWin : rowNumberOfPieceChecked > 0) &&
 		(boardSetting.playWrapMod ? checkTimes < boardSetting.numberRequiredToWin : columnNumberOfPieceChecked < boardSetting.columnNumber + 1)) &&
 		countForConnectPiece < boardSetting.numberRequiredToWin) {
 		columnNumberOfPieceChecked == boardSetting.columnNumber +1 ? columnNumberOfPieceChecked = 1:NULL;
@@ -284,11 +284,11 @@ int checkNewPieceOnDiagonal135Degree(ConnectFourBoard& boardSetting, int rowNumb
 	columnNumberOfPieceChecked = columnNumberOfNewPiece - 1;
 	checkTimes = 0;
 
-	while ((boardSetting.playWrapMod ? checkTimes < boardSetting.numberRequiredToWin : (rowNumberOfPieceChecked > 1) &&
+	while ((boardSetting.playWrapMod ? checkTimes < boardSetting.numberRequiredToWin : (rowNumberOfPieceChecked > 0) &&
 		(boardSetting.playWrapMod ? checkTimes < boardSetting.numberRequiredToWin : columnNumberOfPieceChecked > 0)) &&
 		countForConnectPiece < boardSetting.numberRequiredToWin) {
 		columnNumberOfPieceChecked == 0 ? columnNumberOfPieceChecked = boardSetting.columnNumber : NULL;
-		rowNumberOfPieceChecked == 1 ? rowNumberOfPieceChecked = boardSetting.rowNumber: NULL;
+		rowNumberOfPieceChecked == 0 ? rowNumberOfPieceChecked = boardSetting.rowNumber: NULL;
 		if (boardSetting.boardForPlay[rowNumberOfPieceChecked][columnNumberOfPieceChecked] == tokenOfPlayer) {
 			rowNumberOfPieceChecked -= 1;
 			columnNumberOfPieceChecked -= 1;
