@@ -49,7 +49,8 @@ void creatABoard(int(*newBoard)[BIGGESTCOLUMNNUMBER+2]) {
 			newBoard[i][j] = TOKENOFGRIDNOTUSED;
 		}
 	}
-	//Prepare 22 row for an extra row to record the highest row with pieces of each column.
+	//Prepare 22 row, row[0] used for present column number, row[rowNumber +1] used for record how many pieces in this colummn.
+	//Extra colmn number is just used for making code more convenient, I can use board[columnNumber] instead of board[columnNumber-1] 
 }
 //Creat a board big enough for user to custom their own board in the future.
 void addModToTheGame(bool* customOwnBoard, bool* playWrapMod, bool* removeMod, bool* playWithAI) {
@@ -99,6 +100,7 @@ void initializeBoard(int(*board)[BIGGESTCOLUMNNUMBER+2], int columnNumber, int r
 }
 
 //initialize the board according to the row and column number customed by user.
+
 class ConnectFourBoard {
 public:
 	int boardForPlay[BIGGESTROWNUMBER + 2][BIGGESTCOLUMNNUMBER + 2]{ 0 };
@@ -120,6 +122,8 @@ public:
 		initializeBoard(boardForPlay, columnNumber, rowNumber);
 	}
 };
+
+//Separate board and board setting is easier to understand, but it is not so important, so I spare myself :P
 
 int checkNewPieceOnRow(ConnectFourBoard &boardSetting, int rowNumberOfNewPiece, int columnNumberOfNewPiece, int tokenOfPlayer) {
 	int countForConnectPiece = 1;
@@ -148,6 +152,7 @@ int checkNewPieceOnRow(ConnectFourBoard &boardSetting, int rowNumberOfNewPiece, 
 
 	while ((boardSetting.playWrapMod?checkTimes< boardSetting.numberRequiredToWin:columnNumberOfPieceChecked < boardSetting.columnNumber + 1) && countForConnectPiece < boardSetting.numberRequiredToWin) {
 		columnNumberOfPieceChecked == boardSetting.columnNumber + 1 ? columnNumberOfPieceChecked = 1:NULL;
+		// If reach the bound in wrap mod, move to the first position on the other sider
 		if (boardSetting.boardForPlay[rowNumberOfNewPiece][columnNumberOfPieceChecked] == tokenOfPlayer) {
 			columnNumberOfPieceChecked += 1;
 			countForConnectPiece += 1;
@@ -163,6 +168,7 @@ int checkNewPieceOnRow(ConnectFourBoard &boardSetting, int rowNumberOfNewPiece, 
 	}
 	return ((countForConnectPiece == boardSetting.numberRequiredToWin) ? TOKENOFWINSTATE : emptyNumber * pow(countForConnectPiece, 3));
 	//return the evaluation of this grid(used for AI)
+	//conneted pieces with empty on its side get more points
 }
 
 int checkNewPieceOnColumn(ConnectFourBoard& boardSetting, int rowNumberOfNewPiece, int columnNumberOfNewPiece, int tokenOfPlayer) {
@@ -201,6 +207,8 @@ int checkNewPieceOnColumn(ConnectFourBoard& boardSetting, int rowNumberOfNewPiec
 
 	return ((countForConnectPiece == boardSetting.numberRequiredToWin) ? TOKENOFWINSTATE : emptyNumber * pow(countForConnectPiece, 3));
 }
+//Do not have to check upside on column
+//I make wap mode is available vertically as well, so check highest row of each column whether could connect with the buttom
 
 int checkNewPieceOnDiagonal45Degree(ConnectFourBoard &boardSetting, int rowNumberOfNewPiece, int columnNumberOfNewPiece, int tokenOfPlayer) {
 	int countForConnectPiece = 1;
@@ -328,10 +336,10 @@ int putNewPiece(int tokenOfPlayer, int chosenColumn,ConnectFourBoard &boardSetti
 	boardSetting.boardForPlay[rowNumberOfNewPiece][chosenColumn] = tokenOfPlayer;
 	boardSetting.boardForPlay[boardSetting.rowNumber + 1][chosenColumn] += 1;
 	int winState = calculateValueOfChosenGrid(tokenOfPlayer, rowNumberOfNewPiece, chosenColumn, boardSetting);
-	if (winState >= 500) {
+	if (winState >= TOKENOFWINSTATE) {
 		return TOKENOFWINSTATE;
 	}
-	else if (winState <= -500) {
+	else if (winState <= -TOKENOFWINSTATE) {
 		return -TOKENOFWINSTATE;
 	}
 	else {
@@ -352,7 +360,7 @@ int removeAPiece(ConnectFourBoard &boardSetting) {
 	boardSetting.boardForPlay[boardSetting.rowNumber][chosenColumn] = TOKENOFEMPTYGRID;
 	int winState = 0;
 	int winStateBuffer = 0;
-	// In case 2 players will win together.
+	//In case 2 players will win together
 	while(newNumberOfEachPiece < numberOfRemainPiece) {
 		tokenRecord[newNumberOfEachPiece] = boardSetting.boardForPlay[boardSetting.rowNumber - newNumberOfEachPiece - 1][chosenColumn];
 		boardSetting.boardForPlay[boardSetting.rowNumber - newNumberOfEachPiece-1][chosenColumn] = TOKENOFEMPTYGRID;
@@ -376,19 +384,23 @@ int removeAPiece(ConnectFourBoard &boardSetting) {
 
 int evaluateTheValueOfTheColumn(int tokenOfPlayer, int chosenColumn, ConnectFourBoard &boardSetting) {
 	int valueOfThisColumn = 0;
-	int rowNumberOfVirtualPiece = boardSetting.rowNumber - boardSetting.boardForPlay[boardSetting.rowNumber + 1][chosenColumn];//put a virtual piece for calculate the value of next step
+	int rowNumberOfVirtualPiece = boardSetting.rowNumber - boardSetting.boardForPlay[boardSetting.rowNumber + 1][chosenColumn];
+	//Put a virtual piece for calculate the value of next step
 	if (boardSetting.boardForPlay[boardSetting.rowNumber + 1][chosenColumn] == boardSetting.rowNumber) {
 		return valueOfThisColumn=-2*(TOKENOFWINSTATE+1);
+		// prevent AI put piece on a full column
 	}
 	else{
 		valueOfThisColumn += abs(calculateValueOfChosenGrid(tokenOfPlayer, rowNumberOfVirtualPiece, chosenColumn, boardSetting));
 		valueOfThisColumn += abs(calculateValueOfChosenGrid(-tokenOfPlayer, rowNumberOfVirtualPiece, chosenColumn, boardSetting));
+		//calculate the value of first piece first
 		if (boardSetting.boardForPlay[boardSetting.rowNumber + 1][chosenColumn] == boardSetting.rowNumber - 1) {
 			return valueOfThisColumn;
 		}
 		else {
 			putNewPiece(tokenOfPlayer, chosenColumn, boardSetting);//Put the virtual piece
-			valueOfThisColumn -= abs(calculateValueOfChosenGrid(tokenOfPlayer, rowNumberOfVirtualPiece-1, chosenColumn, boardSetting))/2;//Next step get less value
+			valueOfThisColumn -= abs(calculateValueOfChosenGrid(tokenOfPlayer, rowNumberOfVirtualPiece-1, chosenColumn, boardSetting))/2;
+			//Next step get less value
 			valueOfThisColumn -= abs(calculateValueOfChosenGrid(-tokenOfPlayer, rowNumberOfVirtualPiece-1, chosenColumn, boardSetting))/2;
 			boardSetting.boardForPlay[boardSetting.rowNumber + 1][chosenColumn] -= 1;
 			boardSetting.boardForPlay[rowNumberOfVirtualPiece][chosenColumn] = TOKENOFEMPTYGRID;//Remove virtual piece
@@ -436,12 +448,10 @@ void startAGame() {
 	ConnectFourBoard connectFour;
 	printBoard(connectFour);
 	int moveFirst = 1;
-
 	if (connectFour.playWithAI) {
 		cout << "input 1 to move FIRST, input 2 to move SECOND." << endl;
 		moveFirst = getAInteger(2);
 	}
-
 	while (abs(winState) < 500) {
 		int columnAIChosen = 0;
 		if (connectFour.playRemoveMod) {
